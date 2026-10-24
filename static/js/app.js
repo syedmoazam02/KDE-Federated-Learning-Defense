@@ -1,10 +1,11 @@
 // Application state and handlers
 let currentDigit = 1;
+let currentVariant = 1;
 let chartInstance = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     initDigitPicker();
-    loadTestSample(1);
+    loadTestSample(currentDigit, currentVariant);
 });
 
 function appendToConsole(text) {
@@ -35,7 +36,7 @@ function updateStatusPill(text, className) {
     pill.className = `status-pill ${className}`;
 }
 
-// 1. Upload Dataset
+// 1. Upload Benchmark Dataset
 async function uploadDataset() {
     updateStatusPill("Server: Loading Dataset...", "status-running");
     highlightStep("btn-upload");
@@ -43,10 +44,42 @@ async function uploadDataset() {
         const res = await fetch("/api/upload-dataset", { method: "POST" });
         const data = await res.json();
         appendToConsole(data.log);
+        document.getElementById("active-dataset-label").textContent = "mnist.csv (Benchmark)";
         updateStatusPill("Server: Dataset Loaded", "status-ready");
     } catch (e) {
         appendToConsole("Error loading dataset: " + e);
         updateStatusPill("Server: Error", "status-alert");
+    }
+}
+
+// 1b. Upload Manual Dataset (Custom CSV file)
+async function uploadManualDatasetFile(file) {
+    if (!file) return;
+    
+    updateStatusPill(`Server: Uploading ${file.name}...`, "status-running");
+    highlightStep("btn-upload");
+    appendToConsole(`Initiating manual dataset upload: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`);
+    
+    const formData = new FormData();
+    formData.append("manual_file", file);
+
+    try {
+        const res = await fetch("/api/upload-manual-dataset", {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+            appendToConsole(data.log);
+            document.getElementById("active-dataset-label").textContent = `${file.name} (Custom)`;
+            updateStatusPill("Server: Custom Dataset Loaded", "status-ready");
+        } else {
+            appendToConsole("Upload failed: " + data.message);
+            updateStatusPill("Server: Upload Error", "status-alert");
+        }
+    } catch (e) {
+        appendToConsole("Error uploading manual dataset: " + e);
+        updateStatusPill("Server: Network Error", "status-alert");
     }
 }
 
@@ -158,7 +191,6 @@ async function runOneClickDemo() {
 
         updateStatusPill("Server: Evaluation Completed", "status-ready");
         
-        // Auto show comparison modal
         setTimeout(() => {
             showAccuracyGraph();
         }, 800);
@@ -190,50 +222,97 @@ function initDigitPicker() {
             currentDigit = i;
             document.querySelectorAll(".digit-btn").forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
-            loadTestSample(i);
+            loadTestSample(currentDigit, currentVariant);
         };
         container.appendChild(btn);
     }
 }
 
-async function loadTestSample(digit) {
-    const card = document.getElementById("prediction-card");
+function selectVariant(varNum) {
+    currentVariant = varNum;
+    for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`var-btn-${i}`);
+        if (el) {
+            if (i === varNum) el.classList.add("active");
+            else el.classList.remove("active");
+        }
+    }
+    loadTestSample(currentDigit, currentVariant);
+}
+
+async function loadRandomSample() {
+    updateStatusPill("Generating random sample...", "status-running");
     try {
-        const res = await fetch(`/api/test-sample/${digit}`);
+        const res = await fetch("/api/random-sample");
         const d = await res.json();
+        
+        currentDigit = d.sample_digit;
+        currentVariant = d.sample_variant;
 
-        const isAttacked = (digit === 1);
+        // Update digit buttons
+        document.querySelectorAll(".digit-btn").forEach(b => b.classList.remove("active"));
+        const activeDigitBtn = document.getElementById(`digit-btn-${currentDigit}`);
+        if (activeDigitBtn) activeDigitBtn.classList.add("active");
 
-        card.innerHTML = `
-            <div class="sample-img-box">
-                <img src="${d.image_url}" alt="MNIST Digit ${digit}" onerror="this.src='/static/images/accuracy_comparison.png'">
-                <span>Ground Truth: <strong>${digit}</strong></span>
-            </div>
+        // Update variant buttons
+        for (let i = 1; i <= 4; i++) {
+            const el = document.getElementById(`var-btn-${i}`);
+            if (el) {
+                if (i === currentVariant) el.classList.add("active");
+                else el.classList.remove("active");
+            }
+        }
 
-            <div class="model-eval-box">
-                <h5>1. Clean Global Model</h5>
-                <div class="pred-result success">${d.genuine_model.predicted_digit}</div>
-                <div class="pred-confidence">Confidence: ${d.genuine_model.confidence}</div>
-                <div class="pred-note">${d.genuine_model.status}</div>
-            </div>
-
-            <div class="model-eval-box">
-                <h5>2. Under Poisoning (No Defense)</h5>
-                <div class="pred-result ${isAttacked ? 'danger' : 'success'}">${d.poisoned_model_no_defense.predicted_digit}</div>
-                <div class="pred-confidence">Confidence: ${d.poisoned_model_no_defense.confidence}</div>
-                <div class="pred-note ${isAttacked ? 'warning-text' : ''}">${d.poisoned_model_no_defense.impact}</div>
-            </div>
-
-            <div class="model-eval-box">
-                <h5>3. LoMar KDE Defense</h5>
-                <div class="pred-result success">${d.lomar_kde_defense.final_model_prediction}</div>
-                <div class="pred-confidence">KDE Score: <strong>${d.lomar_kde_defense.score}</strong> (${d.lomar_kde_defense.defense_confidence})</div>
-                <div class="pred-note shield-text">${d.lomar_kde_defense.status}: ${d.lomar_kde_defense.action}</div>
-            </div>
-        `;
+        renderSampleCard(d);
+        updateStatusPill(`Tested Sample: Digit ${currentDigit} (Var #${currentVariant})`, "status-ready");
+        appendToConsole(`[Inspector] Random Sample Tested: Digit ${currentDigit} (Variant #${currentVariant}) -> Ground Truth: ${currentDigit}`);
     } catch (e) {
+        alert("Failed to pick random sample: " + e);
+    }
+}
+
+async function loadTestSample(digit, variant) {
+    try {
+        const res = await fetch(`/api/test-sample/${digit}/${variant}`);
+        const d = await res.json();
+        renderSampleCard(d);
+    } catch (e) {
+        const card = document.getElementById("prediction-card");
         card.innerHTML = `<p style="color:red">Failed to load prediction details: ${e}</p>`;
     }
+}
+
+function renderSampleCard(d) {
+    const card = document.getElementById("prediction-card");
+    const isAttacked = (d.sample_digit === 1);
+
+    card.innerHTML = `
+        <div class="sample-img-box">
+            <img src="${d.image_url}" alt="MNIST Digit ${d.sample_digit} (Var #${d.sample_variant})" onerror="this.src='/static/images/accuracy_comparison.png'">
+            <span>Ground Truth: <strong>${d.sample_digit}</strong> (Var #${d.sample_variant})</span>
+        </div>
+
+        <div class="model-eval-box">
+            <h5>1. Clean Global Model</h5>
+            <div class="pred-result success">${d.genuine_model.predicted_digit}</div>
+            <div class="pred-confidence">Confidence: ${d.genuine_model.confidence}</div>
+            <div class="pred-note">${d.genuine_model.status}</div>
+        </div>
+
+        <div class="model-eval-box">
+            <h5>2. Under Poisoning (No Defense)</h5>
+            <div class="pred-result ${isAttacked ? 'danger' : 'success'}">${d.poisoned_model_no_defense.predicted_digit}</div>
+            <div class="pred-confidence">Confidence: ${d.poisoned_model_no_defense.confidence}</div>
+            <div class="pred-note ${isAttacked ? 'warning-text' : ''}">${d.poisoned_model_no_defense.impact}</div>
+        </div>
+
+        <div class="model-eval-box">
+            <h5>3. LoMar KDE Defense</h5>
+            <div class="pred-result success">${d.lomar_kde_defense.final_model_prediction}</div>
+            <div class="pred-confidence">KDE Score: <strong>${d.lomar_kde_defense.score}</strong> (${d.lomar_kde_defense.defense_confidence})</div>
+            <div class="pred-note shield-text">${d.lomar_kde_defense.status}: ${d.lomar_kde_defense.action}</div>
+        </div>
+    `;
 }
 
 // Modal handling
