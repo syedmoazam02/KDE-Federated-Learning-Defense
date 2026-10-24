@@ -1,102 +1,68 @@
-# Changes and Reset Guide
+# Repository Audit & Modification Guide
 
-This document records all modifications made to this workspace, along with instructions and a ready-to-use prompt to completely revert the project to its original state.
+This document records the architectural structure, file organization, and quality audits conducted for this project workspace.
 
 ---
 
-## 📋 1. Summary of Changes Made
+## 📁 1. Master Repository Structure
 
-| File | Action | Purpose / Description |
+```text
+KDE-Project/
+├── app.py                                   # Modern Flask web application (Port: 5050)
+├── run_web.bat                              # 1-Click Windows launcher for Web App
+├── run_gui.bat                              # 1-Click Windows launcher for Desktop GUI
+├── requirements.txt                         # Root Python dependencies list
+├── .gitignore                               # Excludes >100MB dataset and cache binaries
+├── LICENSE                                  # MIT Open Source License
+├── README.md                                # Publication-grade project documentation
+│
+├── docs/                                    # Academic Project Documentation & Deliverables
+│   ├── KDE_Defense_Federated_Learning_Report.pdf         # Official PDF Project Report (66 pages)
+│   ├── KDE_Defense_Federated_Learning_Report.docx        # Submission-ready Word Report
+│   ├── KDE_Defense_Federated_Learning_Presentation.pdf   # Seminar Presentation PDF (18 slides)
+│   └── KDE_Defense_Federated_Learning_Presentation.pptx  # Editable PowerPoint Slides
+│
+├── templates/
+│   └── index.html                           # Clean application UI layout
+│
+├── static/
+│   ├── css/
+│   │   └── style.css                        # Web application styles and theme
+│   ├── js/
+│   │   └── app.js                           # Frontend API logic, manual upload & inspector
+│   └── images/
+│       ├── accuracy_comparison.png          # Output 2: Accuracy comparison graph
+│       ├── model_size_comparison.png        # Output 3: Model size comparison graph
+│       └── samples/                         # 40 Real MNIST test digit samples (0-9, 4 variants)
+│
+└── Lomar/                                   # Original Federated Learning Module
+    ├── Main.py                              # Desktop Tkinter Client GUI (TF 2.x compatible)
+    ├── Server.py                            # Centralized Aggregation & KDE Defense Server
+    ├── requirements.txt                     # Submodule dependency specifications
+    ├── run.bat                              # Submodule client launcher
+    ├── runServer.bat                        # Submodule server launcher
+    ├── Dataset/
+    │   └── mnist.csv                        # Benchmark MNIST training & testing dataset
+    ├── globalModel/
+    │   └── model.hdf5                       # Aggregated global neural network checkpoint
+    └── model/
+        ├── cnn_weights.hdf5                 # Pre-trained genuine CNN weights
+        ├── poison_weights.hdf5              # Poisoned model weights (label-flipped)
+        └── poison_history.pckl              # Attack training history metrics
+```
+
+---
+
+## 🔍 2. Documentation Audit & Corrections Summary
+
+| Document Component | Identified Issue | Corrective Action Applied |
 | :--- | :--- | :--- |
-| [`README.md`](file:///c:/Users/syedm/OneDrive/Desktop/Projects/Project/README.md) | **Created** | Comprehensive academic project documentation with architecture diagrams, setup guide, and evaluation sections for 6th-semester presentation. |
-| [`.gitignore`](file:///c:/Users/syedm/OneDrive/Desktop/Projects/Project/.gitignore) | **Created** | Prevents large files (e.g., `mnist.csv` > 100MB, `python-3.7.0-amd64.exe`, `.rar`) and cache files from causing GitHub push errors. |
-| [`LICENSE`](file:///c:/Users/syedm/OneDrive/Desktop/Projects/Project/LICENSE) | **Created** | Standard MIT Open Source License. |
-| [`Lomar/README.md`](file:///c:/Users/syedm/OneDrive/Desktop/Projects/Project/Lomar/README.md) | **Created** | Short submodule reference pointing to the main documentation. |
-| [`Lomar/requirements.txt`](file:///c:/Users/syedm/OneDrive/Desktop/Projects/Project/Lomar/requirements.txt) | **Modified** | Removed the invalid `pip install ` prefixes from each line so standard `pip install -r requirements.txt` works properly. |
-| [`CHANGES_AND_RESET_GUIDE.md`](file:///c:/Users/syedm/OneDrive/Desktop/Projects/Project/CHANGES_AND_RESET_GUIDE.md) | **Created** | This file: audit trail and reset procedure. |
-
----
-
-## 🔍 2. Detailed Change Comparison
-
-### File: `Lomar/requirements.txt`
-
-#### Original Content:
-```text
-pip install numpy==1.19.2
-pip install pandas==0.25.3
-pip install matplotlib==3.1.1
-pip install keras==2.3.1
-pip install tensorflow==1.14.0
-pip install h5py==2.10.0
-pip install protobuf==3.16.0
-pip install scikit-learn==0.22.2.post1
-pip install seaborn==0.10.1
-```
-
-#### Modified Content:
-```text
-numpy==1.19.2
-pandas==0.25.3
-matplotlib==3.1.1
-keras==2.3.1
-tensorflow==1.14.0
-h5py==2.10.0
-protobuf==3.16.0
-scikit-learn==0.22.2.post1
-seaborn==0.10.1
-```
-
----
-
-## ⏪ 3. How to Reset via AI Chat (Copy-Paste Prompt)
-
-If you ever want to revert everything back to its exact initial state, copy and paste this exact prompt into the chat:
-
-```text
-Please reset all changes made to this workspace to their original state:
-1. Delete the following added files:
-   - README.md (in the root directory)
-   - .gitignore (in the root directory)
-   - LICENSE (in the root directory)
-   - Lomar/README.md
-   - CHANGES_AND_RESET_GUIDE.md
-2. Revert Lomar/requirements.txt back to its original lines:
-pip install numpy==1.19.2
-pip install pandas==0.25.3
-pip install matplotlib==3.1.1
-pip install keras==2.3.1
-pip install tensorflow==1.14.0
-pip install h5py==2.10.0
-pip install protobuf==3.16.0
-pip install scikit-learn==0.22.2.post1
-pip install seaborn==0.10.1
-```
-
----
-
-## 💻 4. How to Reset Manually (PowerShell / Command Prompt)
-
-If you prefer to revert manually using PowerShell in the project directory:
-
-```powershell
-# 1. Remove the newly created files
-Remove-Item -Path ".\README.md" -Force -ErrorAction SilentlyContinue
-Remove-Item -Path ".\.gitignore" -Force -ErrorAction SilentlyContinue
-Remove-Item -Path ".\LICENSE" -Force -ErrorAction SilentlyContinue
-Remove-Item -Path ".\Lomar\README.md" -Force -ErrorAction SilentlyContinue
-Remove-Item -Path ".\CHANGES_AND_RESET_GUIDE.md" -Force -ErrorAction SilentlyContinue
-
-# 2. Restore Lomar/requirements.txt original content
-@"
-pip install numpy==1.19.2
-pip install pandas==0.25.3
-pip install matplotlib==3.1.1
-pip install keras==2.3.1
-pip install tensorflow==1.14.0
-pip install h5py==2.10.0
-pip install protobuf==3.16.0
-pip install scikit-learn==0.22.2.post1
-pip install seaborn==0.10.1
-"@ | Set-Content -Path ".\Lomar\requirements.txt"
-```
+| **Report Front Matter** | Multiple group members listed | Converted all certificate, declaration, and acknowledgment tables to **Syed Moazam (160923748131)** as single author. |
+| **Declaration & Ack** | Plural pronouns (`we`, `our`, `us`) | Converted all phrasing to singular (`I`, `me`, `my`). |
+| **Report Table 11** | Typo `1.5 SIGINIFICANCE OF THE RESEARCH` | Corrected to `1.5 SIGNIFICANCE OF THE RESEARCH`. |
+| **Report Table 12** | Typo `CHAPTER 5: IMPLIMENTATION` & `SYSTEMARCHITECTURE` | Corrected to `CHAPTER 5: IMPLEMENTATION` and `SYSTEM ARCHITECTURE`. |
+| **Report Table 13** | Misspelling `Lamar` in figure titles | Standardized to `LoMar`. |
+| **Report Abstract** | Typo `non-I.I.Di9mm. settings` & empty `Keywords:` | Fixed to `non-I.I.D. settings` and populated comprehensive research keywords. |
+| **Presentation Slide 2** | Contents list had numbering gap (skipped `#6`) | Restructured and renumbered smoothly from `1` to `12`. |
+| **Presentation Slide 3** | Phrasing `We introduce` | Updated to `This project introduces`. |
+| **Presentation Slide 14**| Slide title `USER VIEW CODE` | Upgraded to `USER INTERFACE WORKFLOW`. |
