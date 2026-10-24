@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Large Datasets (GitHub 100MB file limit)
+**/Dataset/*.csv
+*.csv
+
+# Large Executables and Archives
+*.exe
+*.rar
+*.zip
+
+# Temporary test model files
+**/test.hdf5
+test.hdf5
+
+# OS specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# IDE and Editor configs
+.vscode/
+.idea/
+*.swp
