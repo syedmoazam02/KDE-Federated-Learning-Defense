@@ -23,25 +23,23 @@
         <main class="main-content-grid">
             <!-- Left Action Buttons Sidebar -->
             <aside class="control-panel">
-                <!-- 1-Click Master Demo Button -->
+                <!-- Master Evaluation Pipeline Button -->
                 <button class="btn btn-primary 1-click-btn" id="btn-one-click" onclick="runOneClickDemo()">
-                    <span class="btn-icon">⚡</span>
                     <span class="btn-text">
-                        <strong>1-Click Evaluation Demo</strong>
+                        <strong>Run Evaluation Pipeline</strong>
                         <small>Run complete automated test sequence</small>
                     </span>
                 </button>
 
                 <div class="separator-label">Sequential Execution Steps</div>
 
-                <!-- 6 Buttons strictly matching the GUI in Chapter 5 & Chapter 7 -->
                 <div class="dataset-upload-container">
                     <button class="action-btn" id="btn-upload" onclick="uploadDataset()">
                         <span class="step-num">1</span> Upload MNIST Dataset
                     </button>
                     <input type="file" id="manual-dataset-input" accept=".csv" style="display:none" onchange="uploadManualDatasetFile(this.files[0])">
                     <button class="manual-upload-btn" id="btn-manual-upload" onclick="document.getElementById('manual-dataset-input').click()" title="Select your own custom MNIST .csv file from your computer">
-                        📂 Or Choose Manual MNIST (.csv)
+                        Upload Custom MNIST (.csv)
                     </button>
                 </div>
 
@@ -105,7 +103,7 @@
                             <button class="small-btn" onclick="copyConsole()">Copy</button>
                         </div>
                     </div>
-                    <textarea id="console-output" readonly placeholder="Click 'Upload MNIST Dataset' or '1-Click Evaluation Demo' to begin execution..."></textarea>
+                    <textarea id="console-output" readonly placeholder="Click 'Upload MNIST Dataset' or 'Run Evaluation Pipeline' to begin execution..."></textarea>
                     <div class="terminal-footer">
                         <span id="server-status-pill" class="status-pill status-ready">Server: Ready</span>
                         <span id="round-indicator" class="status-indicator">Federated Round: Synchronized</span>
@@ -114,10 +112,10 @@
 
                 <!-- Interactive MNIST Digit Inference Demo -->
                 <div class="sample-test-section">
-                    <div class="section-badge">Live Attack & Defense Verification</div>
+                    <div class="section-badge">Attack & Defense Verification</div>
                     <div class="sample-header-row">
                         <h3>Interactive MNIST Digit Test & Attack Defense Inspector</h3>
-                        <button class="random-btn" id="btn-random-sample" onclick="loadRandomSample()">🎲 Pick Random Sample</button>
+                        <button class="random-btn" id="btn-random-sample" onclick="loadRandomSample()">Random Sample</button>
                     </div>
                     <p class="section-desc">Test handwritten digit samples to observe how the poisoned model maliciously flips digit 1 to 0, and how the LoMar KDE defense flags and nullifies the attack:</p>
                     

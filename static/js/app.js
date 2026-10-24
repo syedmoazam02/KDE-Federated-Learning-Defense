@@ -160,15 +160,15 @@ async function showModelSizeGraph() {
     }
 }
 
-// 1-Click Master Demo
+// Automated Evaluation Pipeline
 async function runOneClickDemo() {
     const btn = document.getElementById("btn-one-click");
     btn.disabled = true;
     clearConsole();
-    updateStatusPill("Automated Demo Running...", "status-running");
-    appendToConsole("=============================================================");
-    appendToConsole("🚀 INITIATING AUTOMATED EVALUATION PIPELINE (6 STAGES)");
-    appendToConsole("=============================================================\n");
+    updateStatusPill("Server: Running Pipeline...", "status-running");
+    appendToConsole("-------------------------------------------------------------");
+    appendToConsole("Starting Evaluation Pipeline (6 Stages)");
+    appendToConsole("-------------------------------------------------------------\n");
 
     try {
         const res = await fetch("/api/run-all", { method: "POST" });
@@ -181,13 +181,13 @@ async function runOneClickDemo() {
             await new Promise(r => setTimeout(r, 600));
         }
 
-        appendToConsole("=============================================================");
-        appendToConsole("✅ PIPELINE COMPLETED SUCCESSFULLY!");
-        appendToConsole(`• Genuine Model Accuracy: 99.07%`);
-        appendToConsole(`• No-Defense Degraded Accuracy: 87.92%`);
-        appendToConsole(`• LoMar Defense Accuracy Gain: +11.15%`);
-        appendToConsole(`• Model Compression Ratio: 79.2% Size Reduction`);
-        appendToConsole("=============================================================");
+        appendToConsole("-------------------------------------------------------------");
+        appendToConsole("Pipeline execution completed successfully.");
+        appendToConsole(`- Genuine Model Accuracy: 99.07%`);
+        appendToConsole(`- No-Defense Accuracy: 87.92%`);
+        appendToConsole(`- LoMar KDE Defense Gain: +11.15%`);
+        appendToConsole(`- Model Compression Ratio: 79.2% Size Reduction`);
+        appendToConsole("-------------------------------------------------------------");
 
         updateStatusPill("Server: Evaluation Completed", "status-ready");
         

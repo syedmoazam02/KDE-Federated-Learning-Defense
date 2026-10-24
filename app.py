@@ -109,7 +109,7 @@ def upload_manual_dataset():
                 row_vals += ["..."] + [str(r.iloc[-j]) for j in range(min(8, len(r)), 0, -1)]
             preview_lines.append(f"{i}   " + "   ".join(row_vals))
         preview_lines.append(f"\n[{total_lines} rows x {len(df_preview.columns)} columns]")
-        preview_lines.append(f"Manual MNIST dataset successfully verified and synchronized for Federated Training!")
+        preview_lines.append(f"Manual MNIST dataset loaded successfully ({total_lines} rows).")
         
         sample_preview = "\n".join(preview_lines)
         state["dataset_loaded"] = True
