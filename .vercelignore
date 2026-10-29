@@ -1,0 +1,22 @@
+# Datasets and large model files
+Lomar/Dataset/
+*.csv
+*.hdf5
+
+# Python bytecode and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+ENV/
+
+# Git and IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Windows batch files
+*.bat

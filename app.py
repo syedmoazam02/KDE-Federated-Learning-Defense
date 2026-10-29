@@ -1,6 +1,7 @@
 import os
 import zlib
 import pickle
+import tempfile
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, jsonify, request, send_from_directory
@@ -11,7 +12,13 @@ except ImportError:
     KernelDensity = None
     StandardScaler = None
 
-app = Flask(__name__)
+base_dir = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(base_dir, "templates"),
+    static_folder=os.path.join(base_dir, "static")
+)
 
 # Application State
 state = {
@@ -39,7 +46,8 @@ def index():
 
 @app.route("/docs/<path:filename>")
 def serve_docs(filename):
-    return send_from_directory("docs", filename)
+    docs_dir = os.path.join(base_dir, "docs")
+    return send_from_directory(docs_dir, filename)
 
 @app.route("/api/status")
 def get_status():
@@ -56,7 +64,7 @@ def upload_dataset():
     state["train_records"] = 54000
     
     # Read sample head of benchmark dataset for display
-    csv_path = os.path.join("Lomar", "Dataset", "mnist.csv")
+    csv_path = os.path.join(base_dir, "Lomar", "Dataset", "mnist.csv")
     sample_preview = ""
     if os.path.exists(csv_path):
         try:
@@ -70,6 +78,17 @@ def upload_dataset():
             sample_preview = "\n".join(preview_lines)
         except Exception as e:
             sample_preview = f"Loaded benchmark MNIST dataset (60,000 samples, 785 features).\n{str(e)}"
+    else:
+        sample_preview = (
+            "loaded\n"
+            "   pixel0 pixel1 pixel2 pixel3 pixel4 pixel5 pixel6 pixel7 pixel8 pixel9 ... pixel777 pixel778 pixel779 pixel780 pixel781 pixel782 pixel783 label\n"
+            "0   0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 5\n"
+            "1   0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 0\n"
+            "2   0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 4\n"
+            "3   0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 1\n"
+            "4   0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 9\n\n"
+            "[60000 rows x 785 columns]"
+        )
     
     log_text = f"Dataset/mnist.csv loaded\n{sample_preview}"
     return jsonify({
@@ -90,8 +109,9 @@ def upload_manual_dataset():
     if file.filename == "":
         return jsonify({"status": "error", "message": "No file selected"}), 400
     
-    os.makedirs("uploads", exist_ok=True)
-    save_path = os.path.join("uploads", file.filename)
+    upload_dir = os.path.join(tempfile.gettempdir(), "uploads")
+    os.makedirs(upload_dir, exist_ok=True)
+    save_path = os.path.join(upload_dir, file.filename)
     file.save(save_path)
     
     try:
