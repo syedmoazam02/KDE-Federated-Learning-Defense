@@ -1,9 +1,10 @@
 import os
 import sys
 
-# Add project root directory to sys.path so app module can be found
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+# Ensure api directory is in sys.path
+api_dir = os.path.dirname(os.path.abspath(__file__))
+if api_dir not in sys.path:
+    sys.path.insert(0, api_dir)
 
+# Import the configured Flask application
 from app import app

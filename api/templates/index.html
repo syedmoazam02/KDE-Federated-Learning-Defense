@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel Density Estimation (KDE)–Based Defense Against Model Poisoning in Federated Learning</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Chart.js CDN for interactive graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Main Heading Banner with Full Form of KDE for Model Poisoning -->
+        <div class="lomar-title-banner">
+            <h1>Kernel Density Estimation (KDE)–Based Defense Against Model Poisoning in Federated Learning</h1>
+        </div>
+
+        <!-- Main Body Grid Layout -->
+        <main class="main-content-grid">
+            <!-- Left Action Buttons Sidebar -->
+            <aside class="control-panel">
+                <!-- Master Evaluation Pipeline Button -->
+                <button class="btn btn-primary 1-click-btn" id="btn-one-click" onclick="runOneClickDemo()">
+                    <span class="btn-text">
+                        <strong>Run Evaluation Pipeline</strong>
+                        <small>Run complete automated test sequence</small>
+                    </span>
+                </button>
+
+                <div class="separator-label">Sequential Execution Steps</div>
+
+                <div class="dataset-upload-container">
+                    <button class="action-btn" id="btn-upload" onclick="uploadDataset()">
+                        <span class="step-num">1</span> Upload MNIST Dataset
+                    </button>
+                    <input type="file" id="manual-dataset-input" accept=".csv" style="display:none" onchange="uploadManualDatasetFile(this.files[0])">
+                    <button class="manual-upload-btn" id="btn-manual-upload" onclick="document.getElementById('manual-dataset-input').click()" title="Select your own custom MNIST .csv file from your computer">
+                        Upload Custom MNIST (.csv)
+                    </button>
+                </div>
+
+                <button class="action-btn" id="btn-preprocess" onclick="preprocessDataset()">
+                    <span class="step-num">2</span> Preprocess Dataset
+                </button>
+                <button class="action-btn" id="btn-genuine" onclick="uploadGenuine()">
+                    <span class="step-num">3</span> Upload Genuine Model to Server
+                </button>
+                <button class="action-btn" id="btn-poison" onclick="uploadPoison()">
+                    <span class="step-num">4</span> Upload Poison Model to Server
+                </button>
+                <button class="action-btn" id="btn-accuracy" onclick="showAccuracyGraph()">
+                    <span class="step-num">5</span> Propose Lomar & No Defence Accuracy
+                </button>
+                <button class="action-btn" id="btn-model-size" onclick="showModelSizeGraph()">
+                    <span class="step-num">6</span> Extension Model Size Graph
+                </button>
+
+                <div class="system-stats-card">
+                    <h4>Defense Hyperparameters</h4>
+                    <div class="stat-row">
+                        <span>Algorithm:</span>
+                        <strong>LoMar (Gaussian KDE)</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Active Dataset:</span>
+                        <strong id="active-dataset-label">mnist.csv (Benchmark)</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Bandwidth (h):</span>
+                        <strong>0.5 (Silverman's rule)</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Nearest Neighbors (k):</span>
+                        <strong>5 Neighbors</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Threshold:</span>
+                        <strong>Dynamic 75th %ile</strong>
+                    </div>
+                    <div class="stat-row">
+                        <span>Target Attack:</span>
+                        <strong>Label Flip (1 &rarr; 0)</strong>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Console Terminal -->
+            <section class="console-section">
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <div class="terminal-title">LoMar Central Server & Client Execution Log</div>
+                        <div class="terminal-actions">
+                            <button class="small-btn" onclick="clearConsole()">Clear</button>
+                            <button class="small-btn" onclick="copyConsole()">Copy</button>
+                        </div>
+                    </div>
+                    <textarea id="console-output" readonly placeholder="Click 'Upload MNIST Dataset' or 'Run Evaluation Pipeline' to begin execution..."></textarea>
+                    <div class="terminal-footer">
+                        <span id="server-status-pill" class="status-pill status-ready">Server: Ready</span>
+                        <span id="round-indicator" class="status-indicator">Federated Round: Synchronized</span>
+                    </div>
+                </div>
+
+                <!-- Interactive MNIST Digit Inference Demo -->
+                <div class="sample-test-section">
+                    <div class="section-badge">Attack & Defense Verification</div>
+                    <div class="sample-header-row">
+                        <h3>Interactive MNIST Digit Test & Attack Defense Inspector</h3>
+                        <button class="random-btn" id="btn-random-sample" onclick="loadRandomSample()">Random Sample</button>
+                    </div>
+                    <p class="section-desc">Test handwritten digit samples to observe how the poisoned model maliciously flips digit 1 to 0, and how the LoMar KDE defense flags and nullifies the attack:</p>
+                    
+                    <div class="picker-row">
+                        <div class="digit-picker">
+                            <span class="picker-label">Digit (0–9):</span>
+                            <div class="digit-buttons" id="digit-buttons">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+
+                        <div class="variant-picker">
+                            <span class="picker-label">Sample Variation:</span>
+                            <div class="variant-buttons">
+                                <button class="variant-btn active" id="var-btn-1" onclick="selectVariant(1)">Sample #1</button>
+                                <button class="variant-btn" id="var-btn-2" onclick="selectVariant(2)">Sample #2</button>
+                                <button class="variant-btn" id="var-btn-3" onclick="selectVariant(3)">Sample #3</button>
+                                <button class="variant-btn" id="var-btn-4" onclick="selectVariant(4)">Sample #4</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-comparison-grid" id="prediction-card">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for Output 2 & 3 Graphs -->
+        <div class="graph-modal" id="graph-modal">
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <h3 id="modal-title">Graph Visualization</h3>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="chart-container" id="chart-wrapper">
+                        <canvas id="modal-chart"></canvas>
+                    </div>
+                    <div class="modal-image-view">
+                        <img id="modal-img" src="" alt="Matplotlib Graph Output">
+                    </div>
+                    <div class="graph-insights" id="graph-insights"></div>
+                </div>
+                <div class="modal-footer">
+                    <a id="modal-download-btn" href="" download class="btn btn-secondary">Download High-Res Figure</a>
+                    <button class="btn btn-primary" onclick="closeModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Kernel Density Estimation (KDE)–Based Defense Against Model Poisoning in Federated Learning</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
